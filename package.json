@@ -1,0 +1,25 @@
+{
+  "name": "accountant-master-2000",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "build:am2-main": "polymer-bundler --inline-scripts --inline-css src/am2-main/am2-main.html > docs/am2-main.html",
+    "build": "npm run build:am2-main",
+    "prestart": "npm install",
+    "start": "node app.js &",
+    "poststart": "npm run watch",
+    "watch": "node ./node_modules/watch-run/bin/watch -p './src/**' npm run build",
+    "test": "standard 'src/**/*.js'"
+  },
+  "author": "rafael@fumasa.org",
+  "license": "MIT",
+  "devDependencies": {
+    "connect": "^3.6.6",
+    "livereload": "^0.7.0",
+    "polymer-bundler": "^3.1.1",
+    "serve-static": "^1.13.2",
+    "standard": "^11.0.1",
+    "watch-run": "^1.2.5"
+  }
+}

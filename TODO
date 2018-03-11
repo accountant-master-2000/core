@@ -1,0 +1,7 @@
+-aplicativo principal (https://developers.google.com/web/fundamentals/web-components/examples/howto-tabs)
+  -lista de carteiras
+    -carteira(transacoes,descricao,id,tipo,alias,criacao,ultima-alteracao,versao)
+      -transacao(montante,de,para,criacao,ultima-alteracao,id,versao)
+  -grafico com mes atual
+  -criptografar dados
+  -sincronizar dados com outra chave atraves do ipfs (https://github.com/ipfs/js-ipfs/blob/master/examples/browser-script-tag/index.html)

@@ -1,0 +1,75 @@
+<template id="am2-main-template">
+    <style>.card__am2-main-container {
+  text-align: center;
+  display: inline-block;
+  border-radius: 5px;
+  border: 1px solid grey;
+  font-family: Helvetica;
+  margin: 3px;
+  width: 30%;
+}
+
+.card__am2-main-container:hover {
+  box-shadow: 3px 3px 3px;
+}
+
+.card__hidden-content {
+  display: none;
+}
+
+.card__details-btn {
+  background-color: #dedede;
+  padding: 6px;
+  margin-bottom: 8px;
+}</style>
+  <div class="card__am2-main-container">
+    <h2 class="card__name">
+      <span class="card__user-name"></span>
+    </h2>
+    <p>Bla bla bla</p>
+    <div class="card__hidden-content">
+      <p class="card__something"></p>
+    </div>
+    <button class="card__details-btn">More Info</button>
+  </div>
+  <p>testing</p>
+</template>
+<script>class AM2Main extends window.HTMLElement {
+  constructor () {
+    super()
+
+    this.addEventListener('click', e => {
+      this.toggleCard()
+    })
+  }
+
+  connectedCallback () {
+    const shadowRoot = this.attachShadow({ mode: 'open' })
+
+    const template = document.currentScript.ownerDocument.querySelector('#am2-main-template')
+    const instance = template.content.cloneNode(true)
+    shadowRoot.appendChild(instance)
+
+    const userId = this.getAttribute('user-id')
+    console.log(`user-id: ${userId}`)
+
+    this.render({ user: 'Fumasa', blabla: 'heu hauhuh au heua heua heu ahueh uae heu ha' })
+  }
+
+  render (someData) {
+    this.shadowRoot.querySelector('.card__user-name').innerHTML = someData.user
+    this.shadowRoot.querySelector('.card__something').innerHTML = someData.blabla
+  }
+
+  toggleCard () {
+    let elem = this.shadowRoot.querySelector('.card__hidden-content')
+    let btn = this.shadowRoot.querySelector('.card__details-btn')
+    btn.innerHTML = elem.style.display === 'none' ? 'Less Details' : 'More Details'
+    elem.style.display = elem.style.display === 'none' ? 'block' : 'none'
+  }
+}
+
+if (!window.customElements.get('am2-main')) {
+  window.customElements.define('am2-main', AM2Main)
+}
+</script>
