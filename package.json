@@ -5,8 +5,9 @@
   "main": "app.js",
   "scripts": {
     "build:am2-main": "polymer-bundler --inline-scripts --inline-css src/am2-main/am2-main.html > docs/am2-main.html",
-    "build": "npm run build:am2-main",
-    "prestart": "npm install",
+    "build:am2-wallets": "polymer-bundler --inline-scripts --inline-css src/am2-wallets/am2-wallets.html > docs/am2-wallets.html",
+    "build": "npm run build:am2-main && npm run build:am2-wallets",
+    "prestart": "npm install && npm run build",
     "start": "node app.js &",
     "poststart": "npm run watch",
     "watch": "node ./node_modules/watch-run/bin/watch -p './src/**' npm run build",
