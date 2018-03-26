@@ -14,14 +14,14 @@
     am2-wallet-tab[selected] {
       background-color: bisque;
     }
-    .am2-wallets:not(:defined), am2-wallet-tab:not(:defined), am2-wallet-panel:not(:defined) {
+    am2-wallets:not(:defined), am2-wallet-tab:not(:defined), am2-wallet-panel:not(:defined) {
       display: block;
     }
   </style>    
 </head>
 
 <body>
-  <!-- <am2-main user-id="1"></am2-main> -->
+  <am2-github-gist id="coins"></am2-github-gist>
   <am2-wallets>
     <am2-wallet-tab role="heading" slot="tab">Tab 1</am2-wallet-tab>
     <am2-wallet-panel role="region" slot="panel">Content 1</am2-wallet-panel>
@@ -33,6 +33,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.14/webcomponents-hi.js"></script>
   <link rel="import" href="am2-main.html">
   <link rel="import" href="am2-wallets.html">
+  <link rel="import" href="am2-github-gist.html">
 
   <script>
     document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
