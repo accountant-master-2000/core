@@ -1,14 +1,14 @@
 <template id="am2-github-gist-template">
-    <link rel="stylesheet" href="am2-github-gist.css">
-  <div class="card__am2-github-gist-container">
-    <div class="card__name">
-      <h2>Storage Settings</h2>
-      <label for="github-token">Github Token</label>
-      <input id="github-token" type="text">
+  <link rel="stylesheet" href="am2-github-gist.css">
+  <input class="button button-clear" type="button" value="setup">
+  <form class="github-form">
+    <fieldset>
+      <label for="github-token">Token</label>
+      <input id="github-token" placeholder="Github Personal Token" type="text">
       <label for="github-gistid">Gist</label>
-      <input id="github-gistid" type="text">
-    </div>
-    <button class="card__details-btn">Refresh</button>
-  </div>
+      <input id="github-gistid" placeholder="Gist ID" type="text">
+      <input class="button button-primary" type="submit" value="Refresh">
+    </fieldset>
+  </form>
 </template>
 <script src="am2-github-gist.js"></script>

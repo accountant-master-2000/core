@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-  <title>Web Component</title>
+  <title>Accountant Master 2000</title>
   <link rel="stylesheet" href="milligram.min.css">
 </head>
 
@@ -16,9 +17,14 @@
   <link rel="import" href="am2-wallet.html">
   <link rel="import" href="am2-wallets.html">
   <link rel="import" href="am2-github-gist.html">
-
   <script>
-    if (location.host === 'localhost') document.write('<script src="' + (location.protocol || 'http').split(':')[0]+ '://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+    if (location.host.indexOf('localhost') !== -1) document.write('<script src="' + (location.protocol || 'http').split(':')[0]+ '://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+    const supportsCustomElementsV1 = 'customElements' in window
+    if (!supportsCustomElementsV1) {
+      const script = document.createElement('script')
+      script.src = 'custom-elements.min.js'
+      document.head.appendChild(script)
+    }
    </script>
 </body>
 

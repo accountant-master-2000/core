@@ -1,180 +1,177 @@
 <template id="am2-github-gist-template">
-    <style>.card__am2-github-gist-container {
-  text-align: center;
-  display: inline-block;
-  border-radius: 5px;
-  border: 1px solid grey;
-  font-family: Helvetica;
-  margin: 3px;
-  width: 30%;
-}
-
-.card__am2-github-gist-container:hover {
-  box-shadow: 3px 3px 3px;
-}
-
-.card__details-btn {
-  background-color: #dedede;
-  padding: 6px;
-  margin-bottom: 8px;
-}</style>
-  <div class="card__am2-github-gist-container">
-    <div class="card__name">
-      <h2>Storage Settings</h2>
-      <label for="github-token">Github Token</label>
-      <input id="github-token" type="text">
+  <style></style>
+  <input class="button button-clear" type="button" value="setup">
+  <form class="github-form">
+    <fieldset>
+      <label for="github-token">Token</label>
+      <input id="github-token" placeholder="Github Personal Token" type="text">
       <label for="github-gistid">Gist</label>
-      <input id="github-gistid" type="text">
-    </div>
-    <button class="card__details-btn">Refresh</button>
-  </div>
+      <input id="github-gistid" placeholder="Gist ID" type="text">
+      <input class="button button-primary" type="submit" value="Refresh">
+    </fieldset>
+  </form>
 </template>
-<script>class AM2GithubGist extends window.HTMLElement {
-  constructor () {
-    super()
+<script>(function () {
+  class AM2GithubGist extends window.HTMLElement {
+    constructor () {
+      super()
 
-    this.addEventListener('click', this.buttonClicked)
-  }
-
-  get id () { return this.getAttribute('id') }
-
-  set token (value) { window.localStorage.setItem(`am2-github-token-${this.id}`, value) }
-  get token () { return window.localStorage.getItem(`am2-github-token-${this.id}`) }
-
-  set gistid (value) { window.localStorage.setItem(`am2-github-gist-id-${this.id}`, value) }
-  get gistid () { return window.localStorage.getItem(`am2-github-gist-id-${this.id}`) }
-
-  set gistData (value) { window.localStorage.setItem(`am2-github-gist-data-${this.id}`, JSON.stringify(value)) }
-  get gistData () { return JSON.parse(window.localStorage.getItem(`am2-github-gist-data-${this.id}`)) }
-
-  connectedCallback () {
-    if (this.shadowRoot !== null) return
-    const shadowRoot = this.attachShadow({ mode: 'open' })
-
-    const template = document.currentScript.ownerDocument.querySelector('#am2-github-gist-template')
-    const instance = template.content.cloneNode(true)
-    shadowRoot.appendChild(instance)
-
-    // this.render()
-  }
-
-  render () {
-    const dataStr = JSON.stringify(this.gistData)
-    // this.shadowRoot.querySelector('.card__something').innerHTML = dataStr
-    console.log(`data synced: ${dataStr}`)
-  }
-
-  buttonClicked (event) {
-    let token = this.shadowRoot.querySelector('#github-token').value
-    token = token === '' ? undefined : token
-    if (this.token === undefined && token === undefined) {
-      return
-    } else {
-      this.token = token || this.token
+      this.addEventListener('click', this.buttonClicked)
     }
-    this.shadowRoot.querySelector('#github-token').value = ''
-    let gistid = this.shadowRoot.querySelector('#github-gistid').value
-    gistid = gistid === '' ? undefined : gistid
-    if (this.gistid === undefined && gistid === undefined) {
-      return
-    } else {
-      this.gistid = gistid || this.gistid
-    }
-    this.shadowRoot.querySelector('#github-gistid').value = ''
 
-    this._checkGist((data) => {
-      data.wallets = [
-        {
-          alias: 'test01',
-          lastUpdate: new Date(),
-          transactions: [
-            { amount: 4.20, from: 'me', to: 'green', categories: [ 'test' ] },
-            { amount: 4.23, from: 'me', to: 'blue', categories: [ 'test2' ] }
-          ]
-        },
-        {
-          alias: 'test02',
-          lastUpdate: new Date(),
-          transactions: [
-            { amount: 4.23, from: 'me', to: 'green', categories: [ 'test' ] }
-          ]
+    get id () { return this.getAttribute('id') }
+
+    set token (value) { window.localStorage.setItem(`am2-github-token-${this.id}`, value) }
+    get token () { return window.localStorage.getItem(`am2-github-token-${this.id}`) }
+
+    set gistid (value) { window.localStorage.setItem(`am2-github-gist-id-${this.id}`, value) }
+    get gistid () { return window.localStorage.getItem(`am2-github-gist-id-${this.id}`) }
+
+    set gistData (value) { window.localStorage.setItem(`am2-github-gist-data-${this.id}`, JSON.stringify(value)) }
+    get gistData () { return JSON.parse(window.localStorage.getItem(`am2-github-gist-data-${this.id}`)) }
+
+    connectedCallback () {
+      const template = document.currentScript.ownerDocument.querySelector('#am2-github-gist-template')
+      const instance = template.content.cloneNode(true)
+      this.appendChild(instance)
+
+      this._toggleForm()
+    }
+
+    buttonClicked (event) {
+      switch (event.target.type) {
+        case 'submit':
+          this._refreshData()
+          break
+        default:
+          this._toggleForm()
+          break
+      }
+    }
+
+    _toggleForm () {
+      const form = this.querySelector('form.github-form')
+      form.style.display = form.style.display === 'none' ? 'block' : 'none'
+    }
+
+    _refreshData () {
+      let token = this.querySelector('#github-token').value
+      token = token === '' ? undefined : token
+      if (this.token === undefined && token === undefined) {
+        return
+      } else {
+        this.token = token || this.token
+      }
+      this.querySelector('#github-token').value = ''
+
+      let gistid = this.querySelector('#github-gistid').value
+      gistid = gistid === '' ? undefined : gistid
+      if (this.gistid === undefined && gistid === undefined) {
+        return
+      } else {
+        this.gistid = gistid || this.gistid
+      }
+      this.querySelector('#github-gistid').value = ''
+
+      this._checkGist((data) => {
+        data.wallets = [
+          {
+            alias: 'test01',
+            lastUpdate: new Date(),
+            transactions: [
+              { amount: 4.20, from: 'me', to: 'green', date: new Date(), categories: [ 'test' ] },
+              { amount: 4.23, from: 'me', to: 'blue', date: new Date(), categories: [ 'test2' ] }
+            ]
+          },
+          {
+            alias: 'test02',
+            lastUpdate: new Date(),
+            transactions: [
+              { amount: 4.23, from: 'me', to: 'green', date: new Date(), categories: [ 'test' ] }
+            ]
+          },
+          {
+            alias: 'test03',
+            lastUpdate: new Date(),
+            transactions: [
+              { amount: 4.20, from: 'me', to: 'green', date: new Date(), categories: [ 'test' ] },
+              { amount: 4.23, from: 'me', to: 'blue', date: new Date(), categories: [ 'test2' ] }
+            ]
+          }
+        ]
+        this.gistData = data
+        this._saveGist()
+      })
+    }
+
+    _checkGist (callback) {
+      _ajax({
+        url: `https://api.github.com/gists/${this.gistid}`,
+        type: 'GET',
+        beforeSend: (xhr) => {
+          xhr.setRequestHeader('Authorization', `token ${this.token}`)
         }
-      ]
-      this.gistData = data
-      // this.render()
-      this._saveGist()
-    })
-  }
-
-  _checkGist (callback) {
-    _ajax({
-      url: `https://api.github.com/gists/${this.gistid}`,
-      type: 'GET',
-      beforeSend: (xhr) => {
-        xhr.setRequestHeader('Authorization', `token ${this.token}`)
-      }
-    }).then((data) => {
-      const obj = JSON.parse(data).files[`data.${this.id}`]
-      const objData = JSON.parse(obj.content)
-      callback(objData)
-    }, (reason) => {
-      window.alert(reason)
-    })
-  }
-
-  _saveGist () {
-    const data = {
-      'description': 'accountant-master-2000 storage',
-      'files': {}
-    }
-    data.files[`data.${this.id}`] = {
-      'content': JSON.stringify(this.gistData)
+      }).then((data) => {
+        const obj = JSON.parse(data).files[`data.${this.id}`]
+        const objData = JSON.parse(obj.content)
+        callback(objData)
+      }, (reason) => {
+        window.alert(reason)
+      })
     }
 
-    _ajax({
-      url: `https://api.github.com/gists/${this.gistid}`,
-      type: 'PATCH',
-      data: data,
-      beforeSend: (xhr) => {
-        xhr.setRequestHeader('Authorization', `token ${this.token}`)
-        xhr.setRequestHeader('content-type', 'application/json')
+    _saveGist () {
+      const data = {
+        'description': 'accountant-master-2000 storage',
+        'files': {}
       }
-    }).then((data) => {
-      console.log('gist saved!')
-    }, (reason) => {
-      window.alert(reason)
-    })
-  }
-}
+      data.files[`data.${this.id}`] = {
+        'content': JSON.stringify(this.gistData)
+      }
 
-function _ajax ({ url, data = undefined, type = 'GET', beforeSend = undefined }) {
-  return new Promise((resolve, reject) => {
-    const xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP')
-    xhr.open(type, url)
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState > 3) {
-        if (xhr.status === 200) {
-          resolve(xhr.responseText)
-        } else {
-          console.log('[_ajax] error', xhr.status, xhr.statusText, xhr.responseText)
-          reject(xhr.statusText)
+      _ajax({
+        url: `https://api.github.com/gists/${this.gistid}`,
+        type: 'PATCH',
+        data: data,
+        beforeSend: (xhr) => {
+          xhr.setRequestHeader('Authorization', `token ${this.token}`)
+          xhr.setRequestHeader('content-type', 'application/json')
+        }
+      }).then((data) => {
+        console.log('gist saved!')
+      }, (reason) => {
+        window.alert(reason)
+      })
+    }
+  }
+
+  function _ajax ({ url, data = undefined, type = 'GET', beforeSend = undefined }) {
+    return new Promise((resolve, reject) => {
+      const xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP')
+      xhr.open(type, url)
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState > 3) {
+          if (xhr.status === 200) {
+            resolve(xhr.responseText)
+          } else {
+            console.log('[_ajax] error', xhr.status, xhr.statusText, xhr.responseText)
+            reject(xhr.statusText)
+          }
         }
       }
-    }
-    if (beforeSend === undefined) {
-      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-    } else {
-      beforeSend(xhr)
-    }
-    if (data !== undefined) {
-      xhr.send(JSON.stringify(data))
-    } else {
-      xhr.send()
-    }
-  })
-}
+      if (beforeSend === undefined) {
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+      } else {
+        beforeSend(xhr)
+      }
+      if (data !== undefined) {
+        xhr.send(JSON.stringify(data))
+      } else {
+        xhr.send()
+      }
+    })
+  }
 
-if (!window.customElements.get('am2-github-gist')) {
-  window.customElements.define('am2-github-gist', AM2GithubGist)
-}
+  if (!window.customElements.get('am2-github-gist')) window.customElements.define('am2-github-gist', AM2GithubGist)
+})()
 </script>
