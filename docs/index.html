@@ -18,7 +18,7 @@
   <link rel="import" href="am2-github-gist.html">
 
   <script>
-    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+    if (location.host === 'localhost') document.write('<script src="' + (location.protocol || 'http').split(':')[0]+ '://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
    </script>
 </body>
 
