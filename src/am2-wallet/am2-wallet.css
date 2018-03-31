@@ -1,0 +1,7 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+}
+::slotted(wallet-panel) {
+  flex-basis: 100%;
+}

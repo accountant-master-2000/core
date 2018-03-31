@@ -1,19 +1,4 @@
-const KEYCODE = {
-  DOWN: 40,
-  LEFT: 37,
-  RIGHT: 39,
-  UP: 38,
-  HOME: 36,
-  END: 35
-}
-
 class AM2Wallets extends window.HTMLElement {
-  constructor () {
-    super()
-
-    this._onSlotChange = this._onSlotChange.bind(this)
-  }
-
   connectedCallback () {
     const shadowRoot = this.attachShadow({ mode: 'open' })
 
@@ -21,131 +6,126 @@ class AM2Wallets extends window.HTMLElement {
     const instance = template.content.cloneNode(true)
     shadowRoot.appendChild(instance)
 
-    this._tabSlot = this.shadowRoot.querySelector('slot[name=tab]')
-    this._panelSlot = this.shadowRoot.querySelector('slot[name=panel]')
-
-    this._tabSlot.addEventListener('slotchange', this._onSlotChange)
-    this._panelSlot.addEventListener('slotchange', this._onSlotChange)
-
-    this.addEventListener('keydown', this._onKeyDown)
     this.addEventListener('click', this._onClick)
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'tablist')
-    }
+
+    console.log('allAccounts', JSON.stringify(this._allAccounts()))
+    console.log('allCategories', JSON.stringify(this._allCategories()))
 
     Promise.all([
-      window.customElements.whenDefined('am2-wallet-tab'),
-      window.customElements.whenDefined('am2-wallet-panel')
-    ]).then(_ => this._linkPanels())
+      window.customElements.whenDefined('am2-github-gist'),
+      window.customElements.whenDefined('am2-wallet')
+    ]).then(_ => {
+      const store = this._store()
+      if (store !== undefined) this.shadowRoot.querySelector('.am2-wallets-content').appendChild(store)
+      this._allWallets().forEach((val, idx) => {
+        this.shadowRoot.querySelector('.am2-wallets-content').appendChild(val)
+      })
+    })
   }
 
   disconnectedCallback () {
-    this.removeEventListener('keydown', this._onKeyDown)
     this.removeEventListener('click', this._onClick)
   }
 
-  _onSlotChange (someData) {
-    this._linkPanels()
-  }
-
-  _linkPanels () {
-    const tabs = this._allTabs()
-    tabs.forEach(tab => {
-      const panel = tab.nextElementSibling
-      if (panel.tagName.toLowerCase() !== 'am2-wallet-panel') {
-        console.error(`Tab #${tab.id} is not a sibling of a <am2-wallet-panel>`)
-        return
+  get data () {
+    let store = this._store()
+    if (store === undefined) {
+      store = this
+      while (store.parentNode) {
+        store = store.parentNode
       }
-
-      tab.setAttribute('aria-controls', panel.id)
-      panel.setAttribute('aria-labelledby', tab.id)
-    })
-    const selectedTab = tabs.find(tab => tab.selected) || tabs[0]
-    this._selectTab(selectedTab)
+      store = Array.from(store.querySelectorAll('am2-github-gist'))[0]
+    }
+    if ((store !== undefined) && (store.tagName !== '') && store.getAttribute('id') !== undefined) {
+      const data = JSON.parse(window.localStorage.getItem(`${store.tagName.toLowerCase()}-data-${store.getAttribute('id')}`))
+      return data
+    } else {
+      return null
+    }
   }
 
-  _allPanels () {
-    return Array.from(this.querySelectorAll('am2-wallet-panel'))
+  _store () {
+    const gist = Array.from(this.querySelectorAll('am2-github-gist'))
+    // console.log('store', gist, gist[0])
+    return gist[0]
   }
 
-  _allTabs () {
-    return Array.from(this.querySelectorAll('am2-wallet-tab'))
+  _allAccounts () {
+    const data = this.data
+    if (data !== null) {
+      let newArr = [ 'me' ]
+      data.wallets.forEach((w) => {
+        w.transactions.map((t) => (t.from !== 'me' ? t.from : t.to)).forEach(a => {
+          if (newArr.indexOf(a) === -1) newArr.push(a)
+        })
+      })
+      return newArr
+    } else {
+      return []
+    }
   }
 
-  _panelForTab (tab) {
-    if (tab === undefined) return
-    const panelId = tab.getAttribute('aria-controls')
-    return this.querySelector(`#${panelId}`)
+  _allCategories () {
+    const data = this.data
+    if (data !== null) {
+      let newArr = []
+      data.wallets.forEach((w) => {
+        let newNewArr = []
+        w.transactions.forEach((t) => {
+          t.categories.forEach((c) => {
+            if (newNewArr.indexOf(c) === -1 && newArr.indexOf(c) === -1) newNewArr.push(c)
+          })
+        })
+        newArr = newArr.concat(newNewArr)
+      })
+      return newArr
+    } else {
+      return []
+    }
   }
 
-  _prevTab () {
-    const tabs = this._allTabs()
-    let newIdx = tabs.findIndex(tab => tab.selected) - 1
-    return tabs[(newIdx + tabs.length) % tabs.length]
+  _allWallets () {
+    const walletList = Array.from(this.querySelectorAll('am2-wallet'))
+    // console.log('allWallets', walletList)
+    return walletList
   }
 
-  _firstTab () {
-    const tabs = this._allTabs()
-    return tabs[0]
+  _prevWallet () {
+    const wallets = this._allWallets()
+    let newIdx = wallets.findIndex(wallet => wallet.selected) - 1
+    return wallets[(newIdx + wallets.length) % wallets.length]
   }
 
-  _lastTab () {
-    const tabs = this._allTabs()
-    return tabs[tabs.length - 1]
+  _firstWallet () {
+    const wallets = this._allWallets()
+    return wallets[0]
   }
 
-  _nextTab () {
-    const tabs = this._allTabs()
-    let newIdx = tabs.findIndex(tab => tab.selected) + 1
-    return tabs[newIdx % tabs.length]
+  _lastWallet () {
+    const wallets = this._allWallets()
+    return wallets[wallets.length - 1]
+  }
+
+  _nextWallet () {
+    const wallets = this._allWallets()
+    let newIdx = wallets.findIndex(wallet => wallet.selected) + 1
+    return wallets[newIdx % wallets.length]
   }
 
   reset () {
-    const tabs = this._allTabs()
-    const panels = this._allPanels()
-    tabs.forEach(tab => { tab.selected = false })
-    panels.forEach(panel => { panel.hidden = true })
+    const wallets = this._allWallets()
+    wallets.forEach(wallet => { wallet.selected = false })
   }
 
-  _selectTab (newTab) {
-    if (newTab === undefined) return
+  _selectWallet (newWallet) {
+    if (newWallet === undefined) return
     this.reset()
-    const newPanel = this._panelForTab(newTab)
-    if (!newPanel) throw new Error(`No panel with id ${newPanel}`)
-    newTab.selected = true
-    newPanel.hidden = false
-    newTab.focus()
-  }
-
-  _onKeyDown (event) {
-    if (event.target.getAttribute('role') !== 'tab') return
-    if (event.altKey) return
-    let newTab
-    switch (event.keyCode) {
-      case KEYCODE.LEFT:
-      case KEYCODE.UP:
-        newTab = this._prevTab()
-        break
-      case KEYCODE.RIGHT:
-      case KEYCODE.DOWN:
-        newTab = this._nextTab()
-        break
-      case KEYCODE.HOME:
-        newTab = this._firstTab()
-        break
-      case KEYCODE.END:
-        newTab = this._lastTab()
-        break
-      default:
-        return
-    }
-    event.preventDefault()
-    this._selectTab(newTab)
+    newWallet.selected = true
+    newWallet.focus()
   }
 
   _onClick (event) {
-    if (event.target.getAttribute('role') !== 'tab') return
-    this._selectTab(event.target)
+    this._selectWallet(event.target)
   }
 }
 

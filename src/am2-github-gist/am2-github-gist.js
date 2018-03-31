@@ -2,29 +2,7 @@ class AM2GithubGist extends window.HTMLElement {
   constructor () {
     super()
 
-    this.addEventListener('click', e => {
-      let token = this.shadowRoot.querySelector('#github-token').value
-      if (this.token === undefined || token === undefined) {
-        return
-      } else {
-        this.token = token || this.token
-      }
-      this.shadowRoot.querySelector('#github-token').value = undefined
-      let gistid = this.shadowRoot.querySelector('#github-gistid').value
-      if (this.gistid === undefined || gistid === undefined) {
-        return
-      } else {
-        this.gistid = gistid || this.gistid
-      }
-      this.shadowRoot.querySelector('#github-gistid').value = undefined
-
-      this._checkGist((data) => {
-        data.wallets = []
-        this.gistData = data
-        this.render(this.gistData)
-        this._saveGist()
-      })
-    })
+    this.addEventListener('click', this.buttonClicked)
   }
 
   get id () { return this.getAttribute('id') }
@@ -39,20 +17,62 @@ class AM2GithubGist extends window.HTMLElement {
   get gistData () { return JSON.parse(window.localStorage.getItem(`am2-github-gist-data-${this.id}`)) }
 
   connectedCallback () {
+    if (this.shadowRoot !== null) return
     const shadowRoot = this.attachShadow({ mode: 'open' })
 
     const template = document.currentScript.ownerDocument.querySelector('#am2-github-gist-template')
     const instance = template.content.cloneNode(true)
     shadowRoot.appendChild(instance)
 
-    this.render()
+    // this.render()
   }
 
-  render (data) {
-    const dataStr = JSON.stringify(data)
-    let elem = this.shadowRoot.querySelector('.card__hidden-content')
-    elem.style.display = data !== {} ? 'block' : 'none'
-    this.shadowRoot.querySelector('.card__something').innerHTML = dataStr
+  render () {
+    const dataStr = JSON.stringify(this.gistData)
+    // this.shadowRoot.querySelector('.card__something').innerHTML = dataStr
+    console.log(`data synced: ${dataStr}`)
+  }
+
+  buttonClicked (event) {
+    let token = this.shadowRoot.querySelector('#github-token').value
+    token = token === '' ? undefined : token
+    if (this.token === undefined && token === undefined) {
+      return
+    } else {
+      this.token = token || this.token
+    }
+    this.shadowRoot.querySelector('#github-token').value = ''
+    let gistid = this.shadowRoot.querySelector('#github-gistid').value
+    gistid = gistid === '' ? undefined : gistid
+    if (this.gistid === undefined && gistid === undefined) {
+      return
+    } else {
+      this.gistid = gistid || this.gistid
+    }
+    this.shadowRoot.querySelector('#github-gistid').value = ''
+
+    this._checkGist((data) => {
+      data.wallets = [
+        {
+          alias: 'test01',
+          lastUpdate: new Date(),
+          transactions: [
+            { amount: 4.20, from: 'me', to: 'green', categories: [ 'test' ] },
+            { amount: 4.23, from: 'me', to: 'blue', categories: [ 'test2' ] }
+          ]
+        },
+        {
+          alias: 'test02',
+          lastUpdate: new Date(),
+          transactions: [
+            { amount: 4.23, from: 'me', to: 'green', categories: [ 'test' ] }
+          ]
+        }
+      ]
+      this.gistData = data
+      // this.render()
+      this._saveGist()
+    })
   }
 
   _checkGist (callback) {
@@ -74,13 +94,12 @@ class AM2GithubGist extends window.HTMLElement {
   _saveGist () {
     const data = {
       'description': 'accountant-master-2000 storage',
-      'files': {
-        'data': null
-      }
+      'files': {}
     }
     data.files[`data.${this.id}`] = {
       'content': JSON.stringify(this.gistData)
     }
+
     _ajax({
       url: `https://api.github.com/gists/${this.gistid}`,
       type: 'PATCH',

@@ -12,10 +12,6 @@
   box-shadow: 3px 3px 3px;
 }
 
-.card__hidden-content {
-  display: none;
-}
-
 .card__details-btn {
   background-color: #dedede;
   padding: 6px;

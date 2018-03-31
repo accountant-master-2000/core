@@ -6,8 +6,9 @@
   "scripts": {
     "build:am2-main": "polymer-bundler --inline-scripts --inline-css src/am2-main/am2-main.html > docs/am2-main.html",
     "build:am2-wallets": "polymer-bundler --inline-scripts --inline-css src/am2-wallets/am2-wallets.html > docs/am2-wallets.html",
+    "build:am2-wallet": "polymer-bundler --inline-scripts --inline-css src/am2-wallet/am2-wallet.html > docs/am2-wallet.html",
     "build:am2-github-gist": "polymer-bundler --inline-scripts --inline-css src/am2-github-gist/am2-github-gist.html > docs/am2-github-gist.html",
-    "build": "date && npm run build:am2-main && npm run build:am2-wallets && npm run build:am2-github-gist",
+    "build": "date && npm run build:am2-main && npm run build:am2-wallets && npm run build:am2-wallet && npm run build:am2-github-gist",
     "prestart": "npm install && npm run build",
     "start": "node app.js &",
     "poststart": "npm run watch",
