@@ -1,24 +1,24 @@
 (function () {
-  class AM2GithubGist extends window.HTMLElement {
+  class AM2Setup extends window.HTMLElement {
     constructor () {
       super()
 
       this.addEventListener('click', this.buttonClicked)
     }
 
-    get id () { return this.getAttribute('id') }
+    get storeId () { return this.getAttribute('store-id') }
 
-    set token (value) { window.localStorage.setItem(`am2-github-token-${this.id}`, value) }
-    get token () { return window.localStorage.getItem(`am2-github-token-${this.id}`) }
+    set token (value) { window.localStorage.setItem(`am2-github-token-${this.storeId}`, value) }
+    get token () { return window.localStorage.getItem(`am2-github-token-${this.storeId}`) }
 
-    set gistid (value) { window.localStorage.setItem(`am2-github-gist-id-${this.id}`, value) }
-    get gistid () { return window.localStorage.getItem(`am2-github-gist-id-${this.id}`) }
+    set gistid (value) { window.localStorage.setItem(`am2-github-gist-id-${this.storeId}`, value) }
+    get gistid () { return window.localStorage.getItem(`am2-github-gist-id-${this.storeId}`) }
 
-    set gistData (value) { window.localStorage.setItem(`am2-github-gist-data-${this.id}`, JSON.stringify(value)) }
-    get gistData () { return JSON.parse(window.localStorage.getItem(`am2-github-gist-data-${this.id}`)) }
+    set data (value) { window.localStorage.setItem(`am2-setup-data-${this.storeId}`, JSON.stringify(value)) }
+    get data () { return JSON.parse(window.localStorage.getItem(`am2-setup-data-${this.storeId}`)) }
 
     connectedCallback () {
-      const template = document.currentScript.ownerDocument.querySelector('#am2-github-gist-template')
+      const template = document.currentScript.ownerDocument.querySelector('#am2-setup-template')
       const instance = template.content.cloneNode(true)
       this.appendChild(instance)
 
@@ -26,11 +26,12 @@
     }
 
     buttonClicked (event) {
+      event.preventDefault()
       switch (event.target.type) {
         case 'submit':
           this._refreshData()
           break
-        default:
+        case 'button':
           this._toggleForm()
           break
       }
@@ -41,7 +42,7 @@
       form.style.display = form.style.display === 'none' ? 'block' : 'none'
     }
 
-    _refreshData () {
+    _refreshData (callback) {
       let token = this.querySelector('#github-token').value
       token = token === '' ? undefined : token
       if (this.token === undefined && token === undefined) {
@@ -67,7 +68,7 @@
             lastUpdate: new Date(),
             transactions: [
               { amount: 4.20, from: 'me', to: 'green', date: new Date(), categories: [ 'test' ] },
-              { amount: 4.23, from: 'me', to: 'blue', date: new Date(), categories: [ 'test2' ] }
+              { amount: 4.23, from: 'me', to: 'blue', date: new Date(), categories: [ 'test1', 'test2' ] }
             ]
           },
           {
@@ -86,8 +87,10 @@
             ]
           }
         ]
-        this.gistData = data
-        this._saveGist()
+        this.data = data
+        this._saveGist(() => {
+          document.location.reload()
+        })
       })
     }
 
@@ -99,7 +102,7 @@
           xhr.setRequestHeader('Authorization', `token ${this.token}`)
         }
       }).then((data) => {
-        const obj = JSON.parse(data).files[`data.${this.id}`]
+        const obj = JSON.parse(data).files[`data.${this.storeId}`]
         const objData = JSON.parse(obj.content)
         callback(objData)
       }, (reason) => {
@@ -107,25 +110,26 @@
       })
     }
 
-    _saveGist () {
-      const data = {
+    _saveGist (callback) {
+      const sendData = {
         'description': 'accountant-master-2000 storage',
         'files': {}
       }
-      data.files[`data.${this.id}`] = {
-        'content': JSON.stringify(this.gistData)
+      sendData.files[`data.${this.storeId}`] = {
+        'content': JSON.stringify(this.data)
       }
 
       _ajax({
         url: `https://api.github.com/gists/${this.gistid}`,
         type: 'PATCH',
-        data: data,
+        data: sendData,
         beforeSend: (xhr) => {
           xhr.setRequestHeader('Authorization', `token ${this.token}`)
           xhr.setRequestHeader('content-type', 'application/json')
         }
-      }).then((data) => {
+      }).then((d) => {
         console.log('gist saved!')
+        callback()
       }, (reason) => {
         window.alert(reason)
       })
@@ -159,5 +163,5 @@
     })
   }
 
-  if (!window.customElements.get('am2-github-gist')) window.customElements.define('am2-github-gist', AM2GithubGist)
+  if (!window.customElements.get('am2-setup')) window.customElements.define('am2-setup', AM2Setup)
 })()

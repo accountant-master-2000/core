@@ -26,8 +26,8 @@
 
     get data () {
       let store = this._store()
-      if ((store !== undefined) && (store.tagName !== '') && store.getAttribute('id') !== undefined) {
-        const data = JSON.parse(window.localStorage.getItem(`${store.tagName.toLowerCase()}-data-${store.getAttribute('id')}`))
+      if ((store !== undefined) && (store.tagName !== '') && store.getAttribute('store-id') !== undefined) {
+        const data = JSON.parse(window.localStorage.getItem(`${store.tagName.toLowerCase()}-data-${store.getAttribute('store-id')}`))
         return data
       } else {
         return null
@@ -35,13 +35,13 @@
     }
 
     _store () {
-      let gist = Array.from(this.querySelectorAll('am2-github-gist'))
+      let gist = Array.from(this.querySelectorAll('am2-setup'))
       if (gist.length === 0) {
         gist = this
         while (gist.parentNode) {
           gist = gist.parentNode
         }
-        gist = Array.from(gist.querySelectorAll('am2-github-gist'))
+        gist = Array.from(gist.querySelectorAll('am2-setup'))
       }
       return gist[0]
     }
