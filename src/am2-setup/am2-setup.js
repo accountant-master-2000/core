@@ -37,6 +37,77 @@
       }
     }
 
+    _allAccounts () {
+      const data = this.data
+      if (data !== null) {
+        let newArr = [ 'me' ]
+        data.wallets.forEach((w) => {
+          w.transactions.map((t) => (t.from !== 'me' ? t.from : t.to)).forEach(a => {
+            if (newArr.indexOf(a) === -1) newArr.push(a)
+          })
+        })
+        return newArr
+      } else {
+        return []
+      }
+    }
+
+    _allCategories () {
+      const data = this.data
+      if (data !== null) {
+        let newArr = []
+        data.wallets.forEach((w) => {
+          let newNewArr = []
+          w.transactions.forEach((t) => {
+            t.categories.forEach((c) => {
+              if (newNewArr.indexOf(c) === -1 && newArr.indexOf(c) === -1) newNewArr.push(c)
+            })
+          })
+          newArr = newArr.concat(newNewArr)
+        })
+        return newArr
+      } else {
+        return []
+      }
+    }
+
+    _allWallets () {
+      const data = this.data
+      if (data !== null) {
+        return data.wallets.map(w => (w.alias))
+      } else {
+        return []
+      }
+    }
+
+    _allTransactions () {
+      const data = this.data
+      if (data !== null) {
+        let newArr = []
+        data.wallets.forEach((w) => {
+          w.transactions.forEach(t => {
+            t.wallet = w.alias
+            newArr.push(t)
+          })
+        })
+        return newArr
+      } else {
+        return []
+      }
+    }
+
+    _transactionsData ({ wallet = null, account = null, category = null, transactionType = null } = {}) {
+      const transactionsList = []
+      this._allTransactions().forEach((t) => {
+        if (wallet !== null && t.wallet !== wallet) return
+        if (account !== null && (t.from !== account && t.to !== account)) return
+        if (category !== null && t.categories.indexOf(category) === -1) return
+        if (transactionType !== null && ((transactionType && t.from === 'me') || (!transactionType && t.to === 'me'))) return
+        transactionsList.push(t)
+      })
+      return transactionsList
+    }
+
     _toggleForm () {
       const form = this.querySelector('form.github-form')
       form.style.display = form.style.display === 'none' ? 'block' : 'none'

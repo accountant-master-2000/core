@@ -1,7 +1,7 @@
 <template id="am2-setup-template">
   <style></style>
-  <input class="button button-clear" type="button" value="setup">
-  <form class="github-form">
+  <input class="button button-clear" type="button" value="setup" am2-button="">
+  <form class="github-form" am2-content="">
     <fieldset>
       <label for="github-token">Token</label>
       <input id="github-token" placeholder="Github Personal Token" type="text">
@@ -48,6 +48,77 @@
           this._toggleForm()
           break
       }
+    }
+
+    _allAccounts () {
+      const data = this.data
+      if (data !== null) {
+        let newArr = [ 'me' ]
+        data.wallets.forEach((w) => {
+          w.transactions.map((t) => (t.from !== 'me' ? t.from : t.to)).forEach(a => {
+            if (newArr.indexOf(a) === -1) newArr.push(a)
+          })
+        })
+        return newArr
+      } else {
+        return []
+      }
+    }
+
+    _allCategories () {
+      const data = this.data
+      if (data !== null) {
+        let newArr = []
+        data.wallets.forEach((w) => {
+          let newNewArr = []
+          w.transactions.forEach((t) => {
+            t.categories.forEach((c) => {
+              if (newNewArr.indexOf(c) === -1 && newArr.indexOf(c) === -1) newNewArr.push(c)
+            })
+          })
+          newArr = newArr.concat(newNewArr)
+        })
+        return newArr
+      } else {
+        return []
+      }
+    }
+
+    _allWallets () {
+      const data = this.data
+      if (data !== null) {
+        return data.wallets.map(w => (w.alias))
+      } else {
+        return []
+      }
+    }
+
+    _allTransactions () {
+      const data = this.data
+      if (data !== null) {
+        let newArr = []
+        data.wallets.forEach((w) => {
+          w.transactions.forEach(t => {
+            t.wallet = w.alias
+            newArr.push(t)
+          })
+        })
+        return newArr
+      } else {
+        return []
+      }
+    }
+
+    _transactionsData ({ wallet = null, account = null, category = null, transactionType = null } = {}) {
+      const transactionsList = []
+      this._allTransactions().forEach((t) => {
+        if (wallet !== null && t.wallet !== wallet) return
+        if (account !== null && (t.from !== account && t.to !== account)) return
+        if (category !== null && t.categories.indexOf(category) === -1) return
+        if (transactionType !== null && ((transactionType && t.from === 'me') || (!transactionType && t.to === 'me'))) return
+        transactionsList.push(t)
+      })
+      return transactionsList
     }
 
     _toggleForm () {

@@ -1,22 +1,10 @@
 <template id="am2-wallet-template">
-  <style>:host {
-  display: flex;
-  flex-wrap: wrap;
-}
-::slotted(wallet-panel) {
-  flex-basis: 100%;
-}</style>
+  <style></style>
   <h2><span class="am2-wallet-title"></span></h2>
   <div class="am2-wallet-transactions"></div>
 </template>
 <script>(function () {
   class AM2Wallet extends window.HTMLElement {
-    constructor () {
-      super()
-
-      this.addEventListener('click', this._onClick)
-    }
-
     get storeId () { return this.getAttribute('store-id') }
     get storeTagName () {
       let store = this
@@ -30,25 +18,54 @@
 
     get id () { return this.getAttribute('id') }
 
-    set data (value) { window.localStorage.setItem(`${this.storeTagName}-data-${this.storeId}`, JSON.stringify(value)) }
     get data () {
-      if (this.storeTagName !== '') {
-        return JSON.parse(window.localStorage.getItem(`${this.storeTagName}-data-${this.storeId}`)).wallets.find((v) => v.alias === this.id)
-      } else {
-        return { alias: this.id, lastUpdate: new Date(), transactions: [] }
+      let store = this._store()
+      if ((store !== undefined) && (store.tagName !== '') && store.getAttribute('store-id') !== undefined) {
+        const data = JSON.parse(window.localStorage.getItem(`${store.tagName.toLowerCase()}-data-${store.getAttribute('store-id')}`))
+        for (let i = 0; i < data.wallets.length; i++) {
+          if (data.wallets[i].alias === this.id) return data.wallets[i]
+        }
       }
+      return { alias: this.id, date: new Date(), transactions: [] }
+    }
+
+    get balance () {
+      let amount = 0
+      this.data.transactions.forEach(t => {
+        if (t.to === 'me') {
+          amount += t.amount
+        } else {
+          amount -= t.amount
+        }
+      })
+      return amount
+    }
+
+    _store () {
+      let gist = Array.from(this.querySelectorAll('am2-setup'))
+      if (gist.length === 0) {
+        gist = this
+        while (gist.parentNode) {
+          gist = gist.parentNode
+        }
+        gist = Array.from(gist.querySelectorAll('am2-setup'))
+      }
+      return gist[0]
     }
 
     connectedCallback () {
       const template = document.currentScript.ownerDocument.querySelector('#am2-wallet-template')
-      const instance = template.content.cloneNode(true)
-      this.appendChild(instance)
+      if (template !== null) {
+        const instance = template.content.cloneNode(true)
+        this.appendChild(instance)
 
-      this.querySelector('.am2-wallet-title').innerHTML = this.data.alias
-      this.querySelector('.am2-wallet-transactions').innerHTML = ''
-      this.querySelector('.am2-wallet-transactions').appendChild(this._displayTransaction(this.data.transactions))
+        this.querySelector('.am2-wallet-title').innerHTML = `${this.data.alias} => ${this.balance}`
+        this.querySelector('.am2-wallet-transactions').innerHTML = ''
+        this.querySelector('.am2-wallet-transactions').appendChild(this._displayTransaction(this.data.transactions))
 
-      this._toggleTable()
+        this._toggleTable()
+      }
+      this.addEventListener('click', this._onClick)
     }
 
     disconnectedCallback () {

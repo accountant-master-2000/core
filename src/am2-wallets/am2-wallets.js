@@ -2,16 +2,32 @@
   class AM2Wallets extends window.HTMLElement {
     connectedCallback () {
       const template = document.currentScript.ownerDocument.querySelector('#am2-wallets-template')
-      const instance = template.content.cloneNode(true)
-      this.appendChild(instance)
+      if (template !== null) {
+        const instance = template.content.cloneNode(true)
+        this.appendChild(instance)
 
-      console.log('allWallets', JSON.stringify(this._allWallets()))
-      console.log('allAccounts', JSON.stringify(this._allAccounts()))
-      console.log('allCategories', JSON.stringify(this._allCategories()))
+        const div = this.querySelector('div.am2-wallets-content')
+        this._allDisplayWallets().forEach(w => {
+          div.appendChild(w)
+        })
+      }
+
+      this.addEventListener('click', this._onClick)
     }
 
     disconnectedCallback () {
       this.removeEventListener('click', this._onClick)
+    }
+
+    _onClick (event) {
+      if (event.target.getAttribute('type') === 'button') {
+        this._toggleDiv()
+      }
+    }
+
+    _toggleDiv () {
+      const div = this.querySelector('div.am2-wallets-content')
+      div.style.display = div.style.display === 'none' ? 'block' : 'none'
     }
 
     get data () {
@@ -34,49 +50,6 @@
         gist = Array.from(gist.querySelectorAll('am2-setup'))
       }
       return gist[0]
-    }
-
-    _allAccounts () {
-      const data = this.data
-      if (data !== null) {
-        let newArr = [ 'me' ]
-        data.wallets.forEach((w) => {
-          w.transactions.map((t) => (t.from !== 'me' ? t.from : t.to)).forEach(a => {
-            if (newArr.indexOf(a) === -1) newArr.push(a)
-          })
-        })
-        return newArr
-      } else {
-        return []
-      }
-    }
-
-    _allCategories () {
-      const data = this.data
-      if (data !== null) {
-        let newArr = []
-        data.wallets.forEach((w) => {
-          let newNewArr = []
-          w.transactions.forEach((t) => {
-            t.categories.forEach((c) => {
-              if (newNewArr.indexOf(c) === -1 && newArr.indexOf(c) === -1) newNewArr.push(c)
-            })
-          })
-          newArr = newArr.concat(newNewArr)
-        })
-        return newArr
-      } else {
-        return []
-      }
-    }
-
-    _allWallets () {
-      const data = this.data
-      if (data !== null) {
-        return data.wallets.map(w => (w.alias))
-      } else {
-        return []
-      }
     }
 
     _allDisplayWallets () {
