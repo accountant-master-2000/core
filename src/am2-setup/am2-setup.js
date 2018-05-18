@@ -70,6 +70,9 @@
         return []
       }
     }
+    bla () {
+      console.log('oie')
+    }
 
     _allWallets () {
       const data = this.data

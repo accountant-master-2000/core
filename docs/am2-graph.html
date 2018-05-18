@@ -18962,16 +18962,13 @@
 
     get storeId () { return this.getAttribute('store-id') }
 
-    _store () {
-      let gist = Array.from(this.querySelectorAll('am2-setup'))
-      if (gist.length === 0) {
-        gist = this
-        while (gist.parentNode) {
-          gist = gist.parentNode
-        }
-        gist = Array.from(gist.querySelectorAll('am2-setup'))
+    get store () {
+      let store = this
+      while (store.parentNode) {
+        store = store.parentNode
       }
-      return gist[0]
+      store = store.querySelector(`.am2-store[store-id="${this.storeId}"]`)
+      return store
     }
 
     connectedCallback () {
@@ -19063,9 +19060,9 @@
       const lastDay = new Date(today.getFullYear(), today.getMonth(), 0).getDate()
       for (let day = 1; day <= lastDay; day++) chartData.labels.push(day)
 
-      this._store()._allAccounts().forEach((a) => {
+      this.store._allAccounts().forEach((a) => {
         if (a === 'me') return
-        const labelTransactions = this._store()._transactionsData({ account: a })
+        const labelTransactions = this.store._transactionsData({ account: a })
         const credits = []
         const debits = []
 
